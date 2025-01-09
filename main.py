@@ -141,12 +141,70 @@ class CalendarApp:
             label.pack(pady=10)
         else:
             for date, activity in self.activities.items():
+                frame = ctk.CTkFrame(view_window)
+                frame.pack(fill="x", padx=10, pady=5)
+
                 activity_label = ctk.CTkLabel(
-                    view_window, 
+                    frame, 
                     text=f"{date}: {activity}", 
                     font=("Arial", 12)
                 )
-                activity_label.pack(anchor="w", padx=10, pady=5)
+                activity_label.pack(side="left", padx=10)
+
+                edit_button = ctk.CTkButton(
+                    frame, 
+                    text="Edit", 
+                    width= 50,
+                    height=20,
+                    command=lambda d=date, a=activity: self.edit_activity(d, a, view_window)
+                )
+                edit_button.pack(side="right", padx=10)
+
+                delete_button = ctk.CTkButton(
+                    frame, 
+                    text="Delete",
+                    fg_color="red",
+                    width= 50,
+                    height=20,
+                    command=lambda d=date: self.delete_activity(d, view_window)
+                )
+                delete_button.pack(side="right", padx=10)
+
+    def delete_activity(self, date, parent_window):
+        if date in self.activities:
+            del self.activities[date]
+            self.save_activities()
+            parent_window.destroy()
+            self.view_activities()  # Refresh the activities list
+
+
+    def edit_activity(self, date, current_activity, parent_window):
+        edit_window = ctk.CTkToplevel(self.root)
+        edit_window.geometry("300x200")
+        edit_window.title(f"Edit Activity for {date}")
+
+        label = ctk.CTkLabel(edit_window, text="Update Activity:", font=("Arial", 14))
+        label.pack(pady=10)
+
+        activity_entry = ctk.CTkEntry(edit_window, width=200)
+        activity_entry.insert(0, current_activity)
+        activity_entry.pack(pady=10)
+
+        update_button = ctk.CTkButton(
+            edit_window,
+            text="Update",
+            command=lambda: self.update_activity(date, activity_entry.get(), edit_window, parent_window)
+        )
+        update_button.pack(pady=10)
+
+    def update_activity(self, date, new_activity, edit_window, parent_window):
+        self.activities[date] = new_activity
+        self.save_activities()
+        edit_window.destroy()
+        parent_window.destroy()
+        self.view_activities()  
+
+
 
     def prev_month(self):
         self.current_month -= 1
